@@ -4,7 +4,7 @@
 #  3. inyecta la copia versionada del widget de Operon Reservas (assets/booking-widget-demo.html) SIN tocar
 #     su lógica ni su CSS: solo CONFIG y el H3, que es lo que permite TEMATIZACION.md.
 # Después copia index.html + img/ a dist/ para el deploy.
-import pathlib, re, math, random, json, shutil
+import os, pathlib, re, math, random, json, shutil
 
 here = pathlib.Path(__file__).parent
 
@@ -223,7 +223,20 @@ assert 'Vista previa · demo' in w and 'no son datos reales' in w and 'SHOW_EXAM
 
 # ---------- Ensamblado ----------
 src = (here / 'src.html').read_text(encoding='utf-8')
-out = src
+default_site_url = 'https://tierra-adentro-purmamarca.netlify.app'
+site_url = (os.environ.get('PUBLIC_SITE_URL')
+            or os.environ.get('VERCEL_PROJECT_PRODUCTION_URL')
+            or os.environ.get('VERCEL_URL')
+            or default_site_url).strip().rstrip('/')
+if not site_url.startswith(('https://', 'http://')):
+    site_url = 'https://' + site_url
+out = src.replace(default_site_url, site_url)
+canonical_url = os.environ.get('PUBLIC_SITE_URL') or os.environ.get('VERCEL_PROJECT_PRODUCTION_URL')
+if canonical_url:
+    canonical_url = canonical_url.strip().rstrip('/')
+    if not canonical_url.startswith(('https://', 'http://')):
+        canonical_url = 'https://' + canonical_url
+    out = out.replace('</head>', f'<link rel="canonical" href="{canonical_url}/">\n</head>', 1)
 for key, val in (('<!--LOGO_SYMBOL-->', symbol), ('<!--CERRO-->', cerro), ('<!--MAPA-->', map_svg), ('<!--BOOKING_WIDGET-->', w)):
     assert key in out, key
     out = out.replace(key, val)
@@ -234,5 +247,4 @@ if dist.exists():
     shutil.rmtree(dist)
 shutil.copytree(here / 'img', dist / 'img')
 shutil.copy(here / 'index.html', dist / 'index.html')
-(dist / 'netlify.toml').write_text('[build]\n  publish = "."\n  command = ""\n\n[[headers]]\n  for = "/img/*"\n  [headers.values]\n    Cache-Control = "public, max-age=604800"\n', encoding='utf-8')
 print('index.html OK', len(out) // 1024, 'KB')
