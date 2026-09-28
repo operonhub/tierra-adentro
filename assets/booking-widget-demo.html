@@ -1,0 +1,277 @@
+<!--
+  ============================================================
+  WIDGET DE RESERVAS — VERSIÓN DEMO / SOLO VISTA (sin backend)
+  ============================================================
+  Esta versión NO se conecta a nada: ni a Operon Reservas, ni a
+  Supabase, ni a Mercado Pago. Es una SIMULACIÓN 100% del lado del
+  navegador para que CUALQUIER demo de prospección muestre cómo se
+  vería/sentiría el sistema de reservas, sin dar de alta al cliente
+  en el sistema real ni cobrar nada.
+
+  ¿Cuándo usar esta y cuándo la conectada?
+  - `booking-widget-demo.html` (ESTA)  → demos de prospección todavía
+    no vendidas. Todo simulado. No hace falta correr provision-tenant.sql.
+  - `booking-widget.html` (la otra)    → cuando el cliente compró el
+    sistema de reservas: se conecta al motor real (disponibilidad real,
+    reserva real, Mercado Pago). Requiere dar de alta el tenant.
+  Poné SOLO UNA de las dos por página (comparten las clases .bkw).
+
+  CÓMO USARLA:
+  1) Pegar este bloque completo (style + html + script) dentro de la
+     sección "Reservá" de la landing.
+  2) Editar el bloque CONFIG de abajo:
+       WA_NUMBER            → WhatsApp del negocio (549XXXXXXXXXX, sin +)
+       SHOW_EXAMPLE_PRICES  → false = sin montos (recomendado);
+                              true  = montos de EJEMPLO, marcados como no reales
+       UNITS                → 2-3 unidades de ejemplo (nombre, capacidad,
+                              y precio SOLO si SHOW_EXAMPLE_PRICES = true)
+  3) (Opcional) Adaptar la paleta: pisar las variables --bkw-* con un
+     <style> después de este bloque, para que combine con la demo.
+
+  IMPORTANTE: la pantalla final SIEMPRE aclara que es una vista previa
+  y que los datos/precios no son reales. No sacar esa aclaración.
+  ============================================================
+-->
+
+<style>
+  /* ---------- PALETA: pisar estas variables después de este bloque
+     para adaptar el widget a la identidad del cliente. ---------- */
+  .bkw{
+    --bkw-primary:#2E4034;
+    --bkw-accent:#C46A2E;
+    --bkw-bg:#F1ECE3;
+    --bkw-bg-2:#E7E0D3;
+    --bkw-text:#221E19;
+    --bkw-text-soft:#5c5348;
+    --bkw-white:#FBFAF6;
+    --bkw-line:rgba(0,0,0,.14);   /* bordes: en demos oscuras pasar a rgba(255,255,255,.16) */
+    --bkw-radius:16px;
+    --bkw-font-display:Georgia, 'Times New Roman', serif;
+    --bkw-font-body:system-ui, -apple-system, sans-serif;
+  }
+  .bkw{font-family:var(--bkw-font-body);color:var(--bkw-text)}
+  .bkw *{box-sizing:border-box}
+  .bkw-demo-badge{display:inline-block;background:var(--bkw-accent);color:var(--bkw-white);font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:100px;margin-bottom:12px}
+  .bkw h3{font-family:var(--bkw-font-display);font-size:1.35rem;margin-bottom:4px}
+  .bkw .mini{color:var(--bkw-text-soft);font-size:.88rem;margin-bottom:16px}
+  .bkw .field{margin-bottom:14px}
+  .bkw .field label{display:block;font-size:.8rem;font-weight:700;margin-bottom:5px}
+  .bkw .field input,.bkw .field select,.bkw .field textarea{width:100%;padding:12px 14px;border-radius:11px;border:1.5px solid var(--bkw-line);font-family:inherit;font-size:.94rem;background:var(--bkw-bg);color:var(--bkw-text)}
+  .bkw .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .bkw .btn-primary{width:100%;justify-content:center;display:flex;align-items:center;gap:8px;background:var(--bkw-primary);color:var(--bkw-white);border:none;border-radius:100px;padding:14px;font-weight:700;font-size:.95rem;cursor:pointer;transition:transform .2s}
+  .bkw .btn-primary:hover{transform:translateY(-2px)}
+  .bkw .btn-primary:disabled{opacity:.6;cursor:default;transform:none}
+  .bkw .btn-wa{width:100%;justify-content:center;display:flex;align-items:center;gap:8px;background:#25D366;color:#0b3d24;border:none;border-radius:100px;padding:14px;font-weight:700;font-size:.95rem;cursor:pointer;text-decoration:none}
+  .bkw .bk-back{background:none;border:none;color:var(--bkw-text-soft);font-size:.85rem;font-weight:600;cursor:pointer;padding:0;margin-bottom:14px}
+  .bkw .bk-summary{background:var(--bkw-bg-2);border-radius:11px;padding:12px 15px;font-size:.9rem;margin-bottom:16px}
+  .bkw .bk-summary b{font-family:var(--bkw-font-display)}
+  .bkw .bk-unit{display:flex;justify-content:space-between;align-items:center;gap:14px;border:1.5px solid var(--bkw-line);border-radius:13px;padding:15px;margin-bottom:11px;transition:border-color .2s}
+  .bkw .bk-unit:hover{border-color:var(--bkw-accent)}
+  .bkw .bk-unit h4{font-family:var(--bkw-font-display);font-size:1.05rem;margin-bottom:2px}
+  .bkw .bk-unit small{color:var(--bkw-text-soft);font-size:.82rem;display:block}
+  .bkw .bk-unit .price{font-family:var(--bkw-font-display);font-weight:700;color:var(--bkw-primary);font-size:1.1rem;white-space:nowrap}
+  .bkw .bk-unit .price-soft{font-family:var(--bkw-font-body);font-weight:600;color:var(--bkw-text-soft);font-size:.85rem;white-space:nowrap}
+  .bkw .bk-unit .btn-primary{padding:9px 16px;font-size:.83rem;width:auto;margin-top:6px}
+  .bkw .bk-empty{text-align:center;color:var(--bkw-text-soft);font-size:.9rem;padding:18px;border:1.5px dashed var(--bkw-line);border-radius:12px}
+  .bkw .bk-done{text-align:center;padding:6px 0}
+  .bkw .bk-done .ok{width:52px;height:52px;border-radius:50%;background:var(--bkw-bg-2);color:var(--bkw-primary);display:grid;place-items:center;margin:0 auto 10px}
+  .bkw .bk-done .ok svg{width:26px;height:26px}
+  .bkw .bk-code{font-family:var(--bkw-font-display);font-size:1.5rem;font-weight:700;background:var(--bkw-bg-2);border-radius:11px;padding:9px 18px;display:inline-block;margin:8px 0;letter-spacing:.03em}
+  .bkw .bk-price{background:var(--bkw-bg-2);border-radius:11px;padding:12px 16px;margin:12px 0 0;text-align:left;font-size:.87rem}
+  .bkw .bk-price div{display:flex;justify-content:space-between;gap:14px;padding:3px 0}
+  .bkw .bk-price dt{color:var(--bkw-text-soft)}
+  .bkw .bk-price dd{font-weight:700;font-family:var(--bkw-font-display)}
+  .bkw .bk-note{font-size:.78rem;color:var(--bkw-text-soft);font-style:italic;margin-top:12px;line-height:1.4}
+  .bkw .bk-msg{font-size:.85rem;margin-top:10px;min-height:1em}
+  .bkw .bk-msg.err{color:#b3402e}
+  .bkw .bk-spin{opacity:.7;pointer-events:none}
+</style>
+
+<div class="bkw" id="bkw-root">
+  <span class="bkw-demo-badge">Vista previa · demo</span>
+
+  <!-- ===== Reserva online (SIMULADO) — único canal ===== -->
+  <div id="bkw-panel-online">
+    <div id="bkw-step-search">
+      <h3>Reservá online</h3>
+      <p class="mini">Disponibilidad en tiempo real — reservá al instante, sin esperar respuesta.</p>
+      <div class="field-row">
+        <div class="field"><label for="bkw-in">Llegada</label><input id="bkw-in" type="date"></div>
+        <div class="field"><label for="bkw-out">Salida</label><input id="bkw-out" type="date"></div>
+      </div>
+      <div class="field"><label for="bkw-pax">Huéspedes</label>
+        <select id="bkw-pax">
+          <option value="1">1 persona</option><option value="2" selected>2 personas</option>
+          <option value="3">3 personas</option><option value="4">4 personas</option>
+          <option value="5">5 personas</option><option value="6">6 personas</option>
+        </select>
+      </div>
+      <button class="btn-primary" id="bkw-search" type="button">Ver disponibilidad</button>
+    </div>
+    <div id="bkw-step-results" style="display:none"></div>
+    <div id="bkw-step-form" style="display:none"></div>
+    <div id="bkw-step-done" style="display:none"></div>
+    <p class="bk-msg" id="bkw-msg"></p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ============================================================
+  // CONFIG — versión DEMO (sin backend). Editar solo esto.
+  // ============================================================
+  var CONFIG = {
+    WA_NUMBER: '549XXXXXXXXXX',   // <<< WhatsApp del negocio (sin +, sin espacios)
+    // false = NO mostrar montos (recomendado para prospección).
+    // true  = mostrar montos de EJEMPLO, siempre marcados como no reales.
+    SHOW_EXAMPLE_PRICES: false,
+    // Unidades de ejemplo que se muestran en la demo. Poné el precio SOLO
+    // si SHOW_EXAMPLE_PRICES = true (y aun así se marca como ejemplo).
+    UNITS: [
+      { name: 'Cabaña 1', capacity: 2, price_per_night: 90000 },
+      { name: 'Cabaña 2', capacity: 4, price_per_night: 130000 },
+      { name: 'Cabaña 3', capacity: 6, price_per_night: 180000 }
+    ]
+  };
+
+  var WA_NUM = CONFIG.WA_NUMBER;
+  var SHOW_PRICES = !!CONFIG.SHOW_EXAMPLE_PRICES;
+
+  var $ = function(id){ return document.getElementById(id); };
+  function money(n){ return '$ ' + Number(n).toLocaleString('es-AR', {maximumFractionDigits:0}); }
+  function iso(d){ var z=new Date(d.getTime()-d.getTimezoneOffset()*60000); return z.toISOString().slice(0,10); }
+  function addDays(s,n){ var d=new Date(s+'T00:00:00'); d.setDate(d.getDate()+n); return iso(d); }
+  function nights(a,b){ return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000); }
+  function fakeCode(){
+    var s=''; var A='ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
+    for(var i=0;i<6;i++){ s+=A[Math.floor(Math.random()*A.length)]; }
+    return 'DEMO-'+s;
+  }
+
+  var state = { in:'', out:'', pax:2, unit:null };
+
+  // ----- Fechas por defecto -----
+  var today = iso(new Date());
+  $('bkw-in').min = today; $('bkw-out').min = addDays(today,1);
+  $('bkw-in').value = addDays(today,14); $('bkw-out').value = addDays(today,16);
+  $('bkw-in').addEventListener('change', function(){ $('bkw-out').min = addDays($('bkw-in').value||today, 1); });
+
+  var steps = { search:$('bkw-step-search'), results:$('bkw-step-results'), form:$('bkw-step-form'), done:$('bkw-step-done') };
+  function show(step){ for(var k in steps){ steps[k].style.display = (k===step)?'':'none'; } }
+  var msg = $('bkw-msg');
+  function say(text, cls){ msg.textContent = text||''; msg.className = 'bk-msg' + (cls?(' '+cls):''); }
+
+  // ----- Buscar disponibilidad (SIMULADO: filtra por capacidad, sin red) -----
+  $('bkw-search').addEventListener('click', function(){
+    var ci=$('bkw-in').value, co=$('bkw-out').value, pax=parseInt($('bkw-pax').value,10)||1;
+    say('');
+    if(!ci || !co){ say('Elegí las fechas de llegada y salida.', 'err'); return; }
+    if(co <= ci){ say('La salida tiene que ser posterior a la llegada.', 'err'); return; }
+    state.in=ci; state.out=co; state.pax=pax;
+    var btn=this; btn.classList.add('bk-spin'); btn.textContent='Buscando…';
+    // pequeño delay para que se sienta como una búsqueda real
+    setTimeout(function(){
+      var avail = CONFIG.UNITS.filter(function(u){ return u.capacity >= pax; });
+      renderResults(avail);
+      btn.classList.remove('bk-spin'); btn.textContent='Ver disponibilidad';
+    }, 550);
+  });
+
+  function unitPriceLine(u, n){
+    if(SHOW_PRICES){
+      var total = Number(u.price_per_night) * n;
+      return '<div style="text-align:right">'
+        + '<div class="price">'+money(total)+'</div>'
+        + '<small>'+money(u.price_per_night)+'/noche · ejemplo</small>'
+        + '<button class="btn-primary" data-name="'+encodeURIComponent(u.name)+'">Reservar</button></div>';
+    }
+    return '<div style="text-align:right">'
+      + '<div class="price-soft">Consultar tarifa</div>'
+      + '<button class="btn-primary" data-name="'+encodeURIComponent(u.name)+'">Reservar</button></div>';
+  }
+
+  function renderResults(units){
+    var n = nights(state.in, state.out);
+    var html = '<button class="bk-back" id="bkw-back1">&larr; Cambiar fechas</button>'
+      + '<div class="bk-summary">'+state.in+' &rarr; '+state.out+' · <b>'+n+' noche'+(n>1?'s':'')+'</b> · '+state.pax+' huésped'+(state.pax>1?'es':'')+'</div>';
+    if(!units.length){
+      html += '<div class="bk-empty">No hay unidades para esa cantidad de huéspedes. Probá con otras fechas o escribinos por WhatsApp.</div>';
+    } else {
+      units.forEach(function(u){
+        html += '<div class="bk-unit">'
+          + '<div><h4>'+u.name+'</h4><small>Hasta '+u.capacity+' huéspedes</small></div>'
+          + unitPriceLine(u, n)
+          + '</div>';
+      });
+    }
+    steps.results.innerHTML = html; show('results');
+    $('bkw-back1').addEventListener('click', function(){ show('search'); say(''); });
+    Array.prototype.forEach.call(steps.results.querySelectorAll('button[data-name]'), function(b){
+      b.addEventListener('click', function(){
+        state.unit = { name:decodeURIComponent(b.getAttribute('data-name')) };
+        renderForm();
+      });
+    });
+  }
+
+  function renderForm(){
+    var n = nights(state.in, state.out);
+    steps.form.innerHTML = '<button class="bk-back" id="bkw-back2">&larr; Ver otras unidades</button>'
+      + '<div class="bk-summary"><b>'+state.unit.name+'</b> · '+state.in+' &rarr; '+state.out+' · '+n+' noche'+(n>1?'s':'')+'</div>'
+      + '<div class="field"><label for="bkw-name">Nombre y apellido</label><input id="bkw-name" type="text" placeholder="Tu nombre" required></div>'
+      + '<div class="field-row"><div class="field"><label for="bkw-email">Email</label><input id="bkw-email" type="email" placeholder="tu@mail.com"></div>'
+      + '<div class="field"><label for="bkw-phone">Teléfono / WhatsApp</label><input id="bkw-phone" type="text" placeholder="+54 9…"></div></div>'
+      + '<div class="field"><label for="bkw-notes">Comentarios (opcional)</label><textarea id="bkw-notes" placeholder="Llegada aproximada, mascota, etc."></textarea></div>'
+      + '<button class="btn-primary" id="bkw-confirm" type="button">Confirmar reserva</button>'
+      + '<p class="mini" style="text-align:center;margin-top:10px">Vista previa — no se cobra nada ahora.</p>';
+    show('form'); say('');
+    $('bkw-back2').addEventListener('click', function(){ show('results'); say(''); });
+    $('bkw-confirm').addEventListener('click', doBooking);
+  }
+
+  function doBooking(){
+    var name=$('bkw-name').value.trim();
+    if(!name){ say('Ingresá tu nombre.', 'err'); return; }
+    var btn=$('bkw-confirm'); btn.classList.add('bk-spin'); btn.textContent='Confirmando…';
+    // simula el "confirmando" y muestra la pantalla final
+    setTimeout(function(){ renderDone(fakeCode()); }, 650);
+  }
+
+  function renderDone(code){
+    var n = nights(state.in, state.out);
+    var wa = 'https://wa.me/'+WA_NUM+'?text='+encodeURIComponent('¡Hola! Estoy viendo la web y quiero consultar disponibilidad del '+state.in+' al '+state.out+'.');
+
+    var priceHtml = '';
+    if(SHOW_PRICES){
+      // total de EJEMPLO en base a la unidad elegida
+      var u = CONFIG.UNITS.filter(function(x){ return x.name===state.unit.name; })[0];
+      if(u){
+        var total = Number(u.price_per_night)*n;
+        priceHtml = '<dl class="bk-price">'
+          + '<div><dt>Total (ejemplo)</dt><dd>'+money(total)+'</dd></div>'
+          + '<div><dt>Seña de ejemplo (30%)</dt><dd>'+money(Math.round(total*0.30))+'</dd></div>'
+          + '</dl>';
+      }
+    }
+
+    steps.done.innerHTML = '<div class="bk-done">'
+      + '<div class="ok"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
+      + '<h3>¡Así se vería tu reserva!</h3>'
+      + '<p class="mini">En el sistema real, acá el huésped recibe su código y puede pagar la seña online.</p>'
+      + '<div class="bk-code">'+code+'</div>'
+      + '<p class="mini">'+state.unit.name+' · '+state.in+' &rarr; '+state.out+'</p>'
+      + priceHtml
+      + '<a class="btn-wa" style="margin-top:10px;text-decoration:none" href="'+wa+'" target="_blank" rel="noopener">Consultar por WhatsApp</a>'
+      + '<button class="bk-back" id="bkw-again" style="margin-top:14px">Probar de nuevo</button>'
+      + '<p class="bk-note">Vista previa del sistema de reservas de Operon. Las unidades'
+      + (SHOW_PRICES ? ', precios y' : ' y') + ' el código son de ejemplo — no son datos reales. '
+      + 'Al confirmar el proyecto se conecta al motor real con disponibilidad, cobro de seña y panel del dueño.</p>'
+      + '</div>';
+    show('done'); say('');
+    $('bkw-again').addEventListener('click', function(){ state.unit=null; show('search'); });
+  }
+
+})();
+</script>

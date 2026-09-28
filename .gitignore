@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.env*
+!.env.example
+.DS_Store
+Thumbs.db
+
+# Material de trabajo local; solo se versionan los dos insumos que usa build.py.
+work/*
+!work/logo_final.svg
+!work/osm.json
