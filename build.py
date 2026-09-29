@@ -231,7 +231,10 @@ site_url = (os.environ.get('PUBLIC_SITE_URL')
 if not site_url.startswith(('https://', 'http://')):
     site_url = 'https://' + site_url
 out = src.replace(default_site_url, site_url)
-canonical_url = os.environ.get('PUBLIC_SITE_URL') or os.environ.get('VERCEL_PROJECT_PRODUCTION_URL')
+# Only the verified official domain may be canonical. The Vercel system URL is
+# useful for social/schema URLs during preview builds, but it is not the client's
+# canonical domain.
+canonical_url = os.environ.get('PUBLIC_SITE_URL')
 if canonical_url:
     canonical_url = canonical_url.strip().rstrip('/')
     if not canonical_url.startswith(('https://', 'http://')):
