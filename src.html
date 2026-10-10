@@ -108,7 +108,7 @@
 <link rel="preload" as="image" href="img/hero-vista.webp">
 <script>
 /* Decide antes del primer pintado: intro (una vez por sesión), telar y movimiento.
-   Con ?intro en la URL la intro se ve siempre: es el link para mostrar la demo en una llamada. */
+   Con ?intro en la URL la intro se ve siempre. */
 (function(){
   var d=document.documentElement, rm=false, seen=false, force=/[?&]intro(=|&|$)/.test(location.search);
   d.classList.add('js');
@@ -549,8 +549,8 @@ footer.pie{margin-top:6rem;padding:2.2rem 0 2.6rem;border-top:1px solid rgba(251
 @media (hover:hover){.pie nav a:hover{color:var(--on-dark);text-decoration:underline;text-underline-offset:4px}}
 .credits{width:100%;font-size:.76rem;opacity:.7}
 
-/* WhatsApp flotante (arriba del cartel de Netlify) */
-.wa-float{position:fixed;right:1.1rem;bottom:4.6rem;z-index:55;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:#25D366;color:#0b3d24;box-shadow:0 14px 28px -10px rgba(11,61,36,.6);text-decoration:none;opacity:0;transform:translateY(14px) scale(.9);pointer-events:none;transition:opacity .4s,transform .5s var(--ease)}
+/* WhatsApp flotante */
+.wa-float{position:fixed;right:1.1rem;bottom:1.1rem;z-index:55;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:#25D366;color:#0b3d24;box-shadow:0 14px 28px -10px rgba(11,61,36,.6);text-decoration:none;opacity:0;transform:translateY(14px) scale(.9);pointer-events:none;transition:opacity .4s,transform .5s var(--ease)}
 .wa-float svg{width:28px;height:28px}
 .wa-float.show{opacity:1;transform:none;pointer-events:auto}
 @media (hover:hover){.wa-float.show:hover{transform:translateY(-3px)}}
@@ -995,7 +995,7 @@ footer.pie{margin-top:6rem;padding:2.2rem 0 2.6rem;border-top:1px solid rgba(251
         <a href="mailto:tierraadentrooo@gmail.com">tierraadentrooo@gmail.com</a>
         <a href="https://wa.me/5493885081631" target="_blank" rel="noopener">WhatsApp</a>
       </nav>
-      <p class="credits">Fotos: Tierra Adentro (Instagram y Booking). Opiniones tomadas de Booking y Google. · Demo sin cargo por Operon.</p>
+      <p class="credits">Fotos: Tierra Adentro (Instagram y Booking). Opiniones tomadas de Booking y Google.</p>
     </footer>
   </div>
 </section>
