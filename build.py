@@ -1,8 +1,8 @@
 # Arma index.html a partir de src.html:
 #  1. inyecta el logo vectorizado (work/logo_final.svg) como <symbol id="ta-logo">
 #  2. genera el cerro tejido (silueta + 7 estratos con motivos de aguayo)
-#  3. inyecta la copia versionada del widget de Operon Reservas (assets/booking-widget-demo.html) SIN tocar
-#     su lógica ni su CSS: solo CONFIG y el H3, que es lo que permite TEMATIZACION.md.
+#  3. inyecta la copia versionada del widget REAL de Operon Reservas (assets/booking-widget.html) SIN tocar
+#     su lógica ni su CSS: solo CONFIG (ORG_SLUG, WA_NUMBER) y el H3, que es lo que permite TEMATIZACION.md.
 # Después copia index.html + img/ a dist/ para el deploy.
 import os, pathlib, re, math, random, json, shutil
 
@@ -205,21 +205,18 @@ map_svg = (
                  MW - 170, MH - 34, 100 / MPP, 50 / MPP, MW - 46)
 
 # ---------- 3. Widget de reservas ----------
-asset = here / 'assets/booking-widget-demo.html'
+# Widget REAL de Operon Reservas: unidades, tarifas y disponibilidad salen del panel (tenant ORG_SLUG).
+ORG_SLUG, WA_NUMBER = 'tierraadentro', '5493885081631'
+asset = here / 'assets/booking-widget.html'
 w = asset.read_text(encoding='utf-8')
 w = re.sub(r'<!--.*?-->\s*', '', w, count=1, flags=re.S)  # saca el comentario de instrucciones
-w = w.replace("WA_NUMBER: '549XXXXXXXXXX',", "WA_NUMBER: '5493885081631',")
-w = re.sub(r"UNITS: \[.*?\]", """UNITS: [
-      { name: 'Habitación doble · Posada Gorriti', capacity: 2 },
-      { name: 'Habitación triple · Posada Gorriti', capacity: 3 },
-      { name: 'Doble o twin · Posada Lavalle', capacity: 2 },
-      { name: 'Cuádruple · Posada Lavalle', capacity: 4 },
-      { name: 'Familiar · Posada Lavalle', capacity: 5 },
-      { name: 'Departamento en planta baja · Posada Lavalle', capacity: 6 }
-    ]""", w, flags=re.S)
+CONFIG_OLD = ("    ORG_SLUG:     'CAMBIAR-por-el-slug-del-cliente',   // <<< cambiar\n"
+              "    WA_NUMBER:    '549XXXXXXXXXX',                      // <<< cambiar (sin +, sin espacios)")
+for old in (CONFIG_OLD, '<h3>Reservá online</h3>'):
+    assert old in w, 'El asset cambió, no encuentro: ' + old[:40]
+w = w.replace(CONFIG_OLD, "    ORG_SLUG:     '%s',\n    WA_NUMBER:    '%s'," % (ORG_SLUG, WA_NUMBER))
 w = w.replace('<h3>Reservá online</h3>', '<h3>Elegí tus fechas</h3>')
-assert "5493885081631" in w and "Departamento en planta baja" in w and "Elegí tus fechas" in w
-assert 'Vista previa · demo' in w and 'no son datos reales' in w and 'SHOW_EXAMPLE_PRICES: false' in w
+assert 'SHOW_EXAMPLE_PRICES' not in w and 'CAMBIAR' not in w and w.count('class="bkw"') == 1
 
 # ---------- Ensamblado ----------
 src = (here / 'src.html').read_text(encoding='utf-8')

@@ -23,10 +23,10 @@ El repositorio incluye los insumos del mapa y del logo, además de una copia ver
 - Cuando se apruebe el lanzamiento en el dominio final, configurar `PUBLIC_SITE_URL` solo para Production, retirar `noindex,nofollow`, desplegar y verificar el canonical. Después crear `robots.txt` y `sitemap.xml`, conectar Search Console y enviar el sitemap.
 - Las direcciones visibles del sitio y las fichas separadas están respaldadas por el listado oficial de alojamientos de Purmamarca. Confirmar con el cliente horarios, servicios, fotos y textos antes del lanzamiento definitivo.
 
-El widget de reservas generado por este proyecto todavía es de demostración (`SHOW_EXAMPLE_PRICES: false` y avisos de datos ficticios). Antes de presentarlo como un flujo real, acordar con el cliente si se integrará Operon Reservas o si se dejará la consulta por WhatsApp.
+El widget de reservas es el real de Operon Reservas, conectado al complejo `tierraadentro`: las unidades, tarifas y disponibilidad salen del panel, y las reservas caen ahí. `build.py` solo completa `ORG_SLUG` y `WA_NUMBER`.
 
 ## Créditos y datos
 
 El mapa ilustrado usa datos de OpenStreetMap. Se conserva `work/osm.json` (ODbL) y se acredita OpenStreetMap junto al mapa. Las fotos y marcas pertenecen a sus titulares; confirmar autorización de uso para una publicación comercial.
 
-El widget se encuentra en `assets/booking-widget-demo.html` como copia local del componente compartido de Operon usado al generar esta versión. Si el componente compartido cambia, sincronizar esta copia antes del siguiente build.
+El widget se encuentra en `assets/booking-widget.html` como copia local de la plantilla de Operon Reservas (`operon-reservas/src/lib/widget/booking-widget.html`). Si la plantilla cambia, sincronizar esta copia antes del siguiente build.
