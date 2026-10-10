@@ -15,9 +15,8 @@ El repositorio incluye los insumos del mapa y del logo, además de una copia ver
 
 ## Plataformas y publicación
 
-- Netlify se usa solo para previews y demos de prueba. La preview actual está en `https://tierra-adentro-purmamarca.netlify.app/`.
-- Los sitios finales de clientes de Operon van a Vercel. Este repo incluye `vercel.json` para construir `dist/` con Python.
-- La preview lleva `noindex,nofollow`. No quitarlo ni habilitar indexación hasta confirmar el dominio oficial y la aprobación de publicación del cliente.
+- El sitio se publica en Vercel (proyecto `tierra-adentro`): cada push a `main` despliega producción. Mientras no haya dominio propio, la dirección es `https://tierra-adentro-drab.vercel.app/`. `vercel.json` construye `dist/` con Python.
+- El sitio lleva `noindex,nofollow`. No quitarlo ni habilitar indexación hasta confirmar el dominio oficial y la aprobación de publicación del cliente.
 - El build usa `PUBLIC_SITE_URL` si está definida; en Vercel puede usar `VERCEL_PROJECT_PRODUCTION_URL` para las URLs sociales y JSON-LD. Vercel provee esa variable de sistema en sus builds ([documentación](https://vercel.com/docs/environment-variables/system-environment-variables)).
 - El canonical solo se genera con `PUBLIC_SITE_URL`, que debe ser el dominio oficial verificado. Así las previews y el dominio técnico de Vercel no se convierten por accidente en la URL canónica.
 - Cuando se apruebe el lanzamiento en el dominio final, configurar `PUBLIC_SITE_URL` solo para Production, retirar `noindex,nofollow`, desplegar y verificar el canonical. Después crear `robots.txt` y `sitemap.xml`, conectar Search Console y enviar el sitemap.

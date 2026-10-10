@@ -220,7 +220,7 @@ assert 'SHOW_EXAMPLE_PRICES' not in w and 'CAMBIAR' not in w and w.count('class=
 
 # ---------- Ensamblado ----------
 src = (here / 'src.html').read_text(encoding='utf-8')
-default_site_url = 'https://tierra-adentro-purmamarca.netlify.app'
+default_site_url = 'https://tierra-adentro-drab.vercel.app'
 site_url = (os.environ.get('PUBLIC_SITE_URL')
             or os.environ.get('VERCEL_PROJECT_PRODUCTION_URL')
             or os.environ.get('VERCEL_URL')
